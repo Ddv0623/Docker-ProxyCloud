@@ -36,7 +36,7 @@ services:
     image: cloudflare/cloudflared:latest
     container_name: cloudflared
     restart: unless-stopped
-    command: tunnel --loglevel debug --no-autoupdate run --token eyJhIjoiYWI1ZjkxM2UxM2MzZjY0YWMzOTA4NzVlZTIyMWFjNTMiLCJ0IjoiNjZjOWE3NzQtNGU2NS00ZTczLTkzMjYtYjZkNTdiYmJhYjhhIiwicyI6Ik5qYzFZemcxTmpVdE5UVmpZUzAwTjJVekxUa3dZelV0TXpZNU5ERTNabVl5TURnNSJ9
+    command: tunnel --loglevel debug --no-autoupdate run --token {cloudflare_token}
     depends_on:
       - mitmproxy
     networks:
