@@ -1,0 +1,50 @@
+services:
+  mitmproxy:
+    image: mitmproxy/mitmproxy:latest
+    container_name: mitmproxy
+    restart: unless-stopped
+    ports:
+      - "9080:9080"
+      - "5050:5050" # Optional: expose mitmweb UI on host's 9080
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    command: >
+      mitmweb
+      --mode regular
+      --listen-port 5050
+      --listen-host 0.0.0.0
+      --web-port 9080
+      --web-host 0.0.0.0
+      --set web_password=1
+      --set upstream_cert=false
+      --set ssl_insecure=true
+      --scripts /home/mitmproxy/redirectRequest.py
+    volumes:
+      - ./mitmproxy:/home/mitmproxy/.mitmproxy  # Persist certificates and logs
+      - ./redirectRequest.py:/home/mitmproxy/redirectRequest.py
+    networks:
+      - proxy-network
+    tty: true
+    stdin_open: true # Allows mitmproxy to reach host machine
+
+    deploy:
+      resources:
+        limits:
+          memory: 500M
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: cloudflared
+    restart: unless-stopped
+    command: tunnel --loglevel debug --no-autoupdate run --token eyJhIjoiYWI1ZjkxM2UxM2MzZjY0YWMzOTA4NzVlZTIyMWFjNTMiLCJ0IjoiNjZjOWE3NzQtNGU2NS00ZTczLTkzMjYtYjZkNTdiYmJhYjhhIiwicyI6Ik5qYzFZemcxTmpVdE5UVmpZUzAwTjJVekxUa3dZelV0TXpZNU5ERTNabVl5TURnNSJ9
+    depends_on:
+      - mitmproxy
+    networks:
+      - proxy-network
+    deploy:
+      resources:
+        limits:
+          memory: 100M
+
+networks:
+  proxy-network:
